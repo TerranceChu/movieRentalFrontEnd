@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/authApi'; // 引入登录 API
+import jwt_decode from 'jwt-decode';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -8,28 +9,29 @@ const LoginPage: React.FC = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate(); // 用于页面跳转
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleLogin = async (username: string, password: string) => {
     try {
-      // 发起登录请求
       const response = await login(username, password);
-      
-      // 获取响应中的 token
       const token = response.data.token;
-      
-      // 将 token 存储到 localStorage 中
+  
+      // 将 token 存储到 localStorage
       localStorage.setItem('token', token);
+  
+      // 解码 JWT，获取角色
+      const decodedToken: { role: string } = jwt_decode(token);
+      const userRole = decodedToken.role;
+  
+      // 将角色信息存储到 localStorage
+      localStorage.setItem('role', userRole);
       
-      // 设置成功消息
-      setMessage('Login successful');
-      
-      // 跳转到申请页面
-      navigate('/application');
+      // 根据角色跳转到不同页面
+      if (userRole === 'employee') {
+        // 跳转到员工管理页面
+      } else {
+        // 跳转到普通用户页面
+      }
     } catch (error) {
-      // 捕获错误并设置失败消息
       console.error('Login error:', error);
-      setMessage('Login failed. Please check your credentials and try again.');
     }
   };
 
