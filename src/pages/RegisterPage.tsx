@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { register } from '../api/authApi'; // 引入注册 API
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +23,11 @@ const RegisterPage: React.FC = () => {
       setMessage('Registration failed. Please try again.');
     }
   };
+
+    // 导航到登录页面
+    const handleLoginClick = () => {
+        navigate('/login');
+    };
 
   return (
     <div>
@@ -47,6 +54,12 @@ const RegisterPage: React.FC = () => {
         <button type="submit">Register</button>
       </form>
       {message && <p>{message}</p>} {/* 显示消息 */}
+    
+    {/* 返回登录按钮 */}
+    <div>
+       <p>Already have an account? <button onClick={handleLoginClick}>Login</button></p>
+     </div>
+    
     </div>
   );
 };
