@@ -36,6 +36,12 @@ const NavBar: React.FC = () => {
 
       {role === 'employee' && (
         <>
+          <button style={styles.button} onClick={() => handleNavigation('/application')}>
+            Application
+          </button>
+          <button style={styles.button} onClick={() => handleNavigation('/movies')}>
+            Movie List
+          </button>
           <button style={styles.button} onClick={() => handleNavigation('/applications')}>
             Application List
           </button>
