@@ -1,29 +1,26 @@
+// src/pages/AddMoviePage.tsx
 import React, { useState } from 'react';
-import { addMovie } from '../api/movieApi'; // 引入API文件
+import { addMovie } from '../api/movieApi';
 
 const AddMoviePage = () => {
-  const [title, setTitle] = useState(''); // 电影标题
-  const [year, setYear] = useState(''); // 电影年份
-  const [genre, setGenre] = useState(''); // 电影类型
-  const [rating, setRating] = useState(''); // 电影评分
-  const [status, setStatus] = useState('available'); // 电影状态
-  const [message, setMessage] = useState(''); // 用于显示成功或失败的消息
+  const [title, setTitle] = useState('');
+  const [year, setYear] = useState('');
+  const [genre, setGenre] = useState('');
+  const [rating, setRating] = useState('');
+  const [status, setStatus] = useState('available');
+  const [message, setMessage] = useState('');
 
-  // 提交表单的处理函数
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      // 创建电影数据对象
       const movieData = {
         title,
-        year: parseInt(year), // 将年份从字符串转换为整数
+        year: parseInt(year),
         genre,
-        rating: parseFloat(rating), // 将评分从字符串转换为浮点数
+        rating: parseFloat(rating),
         status,
       };
-
-      // 调用API添加电影
       await addMovie(movieData);
       setMessage('Movie added successfully!');
     } catch (error) {
@@ -35,7 +32,7 @@ const AddMoviePage = () => {
   return (
     <div>
       <h1>Add Movie</h1>
-      {message && <p>{message}</p>} {/* 显示成功或失败的消息 */}
+      {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Title:</label>
