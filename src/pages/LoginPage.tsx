@@ -41,6 +41,11 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  // 导航到注册页面
+  const handleRegisterClick = () => {
+      navigate('/register');
+  };
+
   return (
     <div>
       <h1>Login</h1>
@@ -66,6 +71,11 @@ const LoginPage: React.FC = () => {
         </div>
         <button type="submit">Login</button>
       </form>
+
+        {/* 注册按钮 */}
+        <div>
+        <p>Don't have an account? <button onClick={handleRegisterClick}>Register</button></p>
+      </div>
     </div>
   );
 };
