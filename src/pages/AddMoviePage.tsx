@@ -31,6 +31,17 @@ const AddMoviePage = () => {
     }
   };
 
+  // 返回电影列表页面
+  const handleBackToMoviesClick = () => {
+      navigate('/movies'); // 导航到电影列表页面
+    };
+  
+  // 登出并返回登录页面
+  const handleLogoutClick = () => {
+    localStorage.removeItem('token'); // 清除登录令牌
+    navigate('/login'); // 导航到登录页面
+  };
+
   return (
     <div>
       <h1>Add Movie</h1>
@@ -83,6 +94,12 @@ const AddMoviePage = () => {
         </div>
         <button type="submit">Add Movie</button>
       </form>
+
+      {/* 返回电影列表页面的按钮 */}
+      <button onClick={handleBackToMoviesClick}>Back to Movie List</button>
+
+      {/* 登出按钮 */}
+      <button onClick={handleLogoutClick}>Logout</button>
     </div>
   );
 };

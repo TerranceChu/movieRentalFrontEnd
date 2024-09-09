@@ -26,6 +26,11 @@ const ApplicationPage: React.FC = () => {
     }
   };
 
+    // 跳转到电影列表页面
+    const handleGoToMoviesClick = () => {
+        navigate('/movies');
+      };
+
     // 导航到登录页面
     const handleLogoutClick = () => {
         localStorage.removeItem('token');  // 清除登录令牌
@@ -70,6 +75,9 @@ const ApplicationPage: React.FC = () => {
         <button type="submit">Submit Application</button>
       </form>
       {message && <p>{message}</p>}
+
+      {/* Go to Movie List 按钮 */}
+      <button onClick={handleGoToMoviesClick}>Go to Movie List</button>
       
       {/* 登出按钮 */}
       <button onClick={handleLogoutClick}>Logout</button>
