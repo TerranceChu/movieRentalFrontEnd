@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createApplication } from '../api/applicationApi';
 
 const ApplicationPage: React.FC = () => {
@@ -6,6 +7,7 @@ const ApplicationPage: React.FC = () => {
   const [applicantEmail, setApplicantEmail] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
   // 处理表单提交的函数
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,6 +25,12 @@ const ApplicationPage: React.FC = () => {
       setMessage('Failed to submit application. Please try again.');
     }
   };
+
+    // 导航到登录页面
+    const handleLogoutClick = () => {
+        localStorage.removeItem('token');  // 清除登录令牌
+        navigate('/login');
+      };
 
   return (
     <div>
@@ -61,6 +69,10 @@ const ApplicationPage: React.FC = () => {
         
         <button type="submit">Submit Application</button>
       </form>
+      {message && <p>{message}</p>}
+      
+      {/* 登出按钮 */}
+      <button onClick={handleLogoutClick}>Logout</button>
     </div>
   );
 };

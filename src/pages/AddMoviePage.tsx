@@ -1,5 +1,6 @@
 // src/pages/AddMoviePage.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { addMovie } from '../api/movieApi';
 
 const AddMoviePage = () => {
@@ -9,6 +10,7 @@ const AddMoviePage = () => {
   const [rating, setRating] = useState('');
   const [status, setStatus] = useState('available');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
