@@ -1,12 +1,12 @@
 // src/pages/ApplicationListPage.tsx
 import React, { useState, useEffect } from 'react';
 import { getApplications, updateApplicationStatus } from '../api/applicationApi';
-import { useNavigate } from 'react-router-dom';
+import NavBar from '../components/NavBar';
 
 const ApplicationListPage: React.FC = () => {
   const [applications, setApplications] = useState<any[]>([]);
   const [error, setError] = useState<string>('');
-  const navigate = useNavigate();
+  
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -21,11 +21,6 @@ const ApplicationListPage: React.FC = () => {
     fetchApplications();
   }, []);
 
-  // 导航到登录页面
-  const handleLogoutClick = () => {
-    localStorage.removeItem('token');  // 清除登录令牌
-    navigate('/login');
-  };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
@@ -43,6 +38,8 @@ const ApplicationListPage: React.FC = () => {
 
   return (
     <div>
+      {/* 导航栏 */}
+      <NavBar />
       <h1>Application List</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <ul>
@@ -64,9 +61,6 @@ const ApplicationListPage: React.FC = () => {
           </li>
         ))}
       </ul>
-
-      {/* 登出按钮 */}
-      <button onClick={handleLogoutClick}>Logout</button>
     </div>
   );
 };

@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { createApplication } from '../api/applicationApi';
+import NavBar from '../components/NavBar';
 
 const ApplicationPage: React.FC = () => {
   const [applicantName, setApplicantName] = useState('');
   const [applicantEmail, setApplicantEmail] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate();
 
   // 处理表单提交的函数
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,19 +25,11 @@ const ApplicationPage: React.FC = () => {
     }
   };
 
-    // 跳转到电影列表页面
-    const handleGoToMoviesClick = () => {
-        navigate('/movies');
-      };
-
-    // 导航到登录页面
-    const handleLogoutClick = () => {
-        localStorage.removeItem('token');  // 清除登录令牌
-        navigate('/login');
-      };
 
   return (
     <div>
+      {/* 导航栏 */}
+      <NavBar />
       <h1>Submit Your Application</h1>
       {message && <p>{message}</p>} {/* 显示成功或失败消息 */}
       
@@ -75,12 +66,6 @@ const ApplicationPage: React.FC = () => {
         <button type="submit">Submit Application</button>
       </form>
       {message && <p>{message}</p>}
-
-      {/* Go to Movie List 按钮 */}
-      <button onClick={handleGoToMoviesClick}>Go to Movie List</button>
-      
-      {/* 登出按钮 */}
-      <button onClick={handleLogoutClick}>Logout</button>
     </div>
   );
 };

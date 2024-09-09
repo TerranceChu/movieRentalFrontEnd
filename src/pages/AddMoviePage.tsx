@@ -1,8 +1,7 @@
 // src/pages/AddMoviePage.tsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { addMovie } from '../api/movieApi';
-
+import NavBar from '../components/NavBar';
 const AddMoviePage = () => {
   const [title, setTitle] = useState('');
   const [year, setYear] = useState('');
@@ -10,7 +9,6 @@ const AddMoviePage = () => {
   const [rating, setRating] = useState('');
   const [status, setStatus] = useState('available');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,19 +29,12 @@ const AddMoviePage = () => {
     }
   };
 
-  // 返回电影列表页面
-  const handleBackToMoviesClick = () => {
-      navigate('/movies'); // 导航到电影列表页面
-    };
-  
-  // 登出并返回登录页面
-  const handleLogoutClick = () => {
-    localStorage.removeItem('token'); // 清除登录令牌
-    navigate('/login'); // 导航到登录页面
-  };
+
 
   return (
     <div>
+       {/* 导航栏 */}
+      <NavBar />
       <h1>Add Movie</h1>
       {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
@@ -95,11 +86,6 @@ const AddMoviePage = () => {
         <button type="submit">Add Movie</button>
       </form>
 
-      {/* 返回电影列表页面的按钮 */}
-      <button onClick={handleBackToMoviesClick}>Back to Movie List</button>
-
-      {/* 登出按钮 */}
-      <button onClick={handleLogoutClick}>Logout</button>
     </div>
   );
 };

@@ -7,6 +7,7 @@ import ApplicationListPage from './pages/ApplicationListPage';
 import MovieListPage from './pages/MovieListPage';
 import AddMoviePage from './pages/AddMoviePage';
 import PrivateRoute from './components/PrivateRoute'; // 用于角色权限管理的路由
+import UserProfilePage from './pages/UserProfilePage'; // 引入 UserProfilePage
 
 const App: React.FC = () => {
   return (
@@ -34,7 +35,8 @@ const App: React.FC = () => {
         >
           <Route path="/add-movie" element={<AddMoviePage />} />      {/* 添加电影 */}
         </Route>
-
+               {/* 用户个人资料页面 */}
+               <Route path="/profile" element={<UserProfilePage />} />
         {/* 处理未匹配的路由，重定向到登录页面 */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
