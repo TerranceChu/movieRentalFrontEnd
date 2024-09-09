@@ -1,7 +1,9 @@
-// src/pages/AddMoviePage.tsx
 import React, { useState } from 'react';
-import { addMovie, uploadMoviePoster } from '../api/movieApi'; // 新增 uploadMoviePoster API 调用
+import { addMovie } from '../api/movieApi';
+import { Select, AutoComplete, Input, Button } from 'antd';  // 引入 Ant Design 的组件
 import NavBar from '../components/NavBar';
+
+const { Option, OptGroup } = Select;
 
 const AddMoviePage = () => {
   const [title, setTitle] = useState('');
@@ -9,8 +11,29 @@ const AddMoviePage = () => {
   const [genre, setGenre] = useState('');
   const [rating, setRating] = useState('');
   const [status, setStatus] = useState('available');
-  const [poster, setPoster] = useState<File | null>(null); // 用于存储选择的图片
   const [message, setMessage] = useState('');
+
+  // Genre Options
+  const genreOptions = [
+    { value: 'Action' },
+    { value: 'Adventure' },
+    { value: 'Comedy' },
+    { value: 'Drama' },
+    { value: 'Fantasy' },
+    { value: 'Horror' },
+    { value: 'Sci-Fi' },
+    { value: 'Thriller' },
+    { value: 'Documentary' },
+    { value: 'Romance' },
+    { value: 'Animation' },
+    { value: 'Biography' },
+    { value: 'Crime' },
+    { value: 'Family' },
+    { value: 'Historical' },
+    { value: 'Musical' },
+    { value: 'War' },
+    { value: 'Western' }
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,19 +46,7 @@ const AddMoviePage = () => {
         rating: parseFloat(rating),
         status,
       };
-
-      // 添加电影到数据库
-      const movieResponse = await addMovie(movieData);
-      const movieId = movieResponse.data.insertedId;
-
-      // 上传海报图片
-      if (poster && movieId) {
-        const formData = new FormData();
-        formData.append('poster', poster);
-
-        await uploadMoviePoster(movieId, formData); // 上传图片
-      }
-
+      await addMovie(movieData);
       setMessage('Movie added successfully!');
     } catch (error) {
       setMessage('Failed to add movie. Please try again.');
@@ -45,14 +56,13 @@ const AddMoviePage = () => {
 
   return (
     <div>
-      {/* 导航栏 */}
       <NavBar />
       <h1>Add Movie</h1>
       {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Title:</label>
-          <input
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -61,7 +71,7 @@ const AddMoviePage = () => {
         </div>
         <div>
           <label>Year:</label>
-          <input
+          <Input
             type="number"
             value={year}
             onChange={(e) => setYear(e.target.value)}
@@ -70,16 +80,20 @@ const AddMoviePage = () => {
         </div>
         <div>
           <label>Genre:</label>
-          <input
-            type="text"
-            value={genre}
-            onChange={(e) => setGenre(e.target.value)}
-            required
+          {/* 下拉式清单与搜索 */}
+          <AutoComplete
+            options={genreOptions}
+            style={{ width: 200 }}
+            onSelect={(value) => setGenre(value)}
+            placeholder="Select genre"
+            filterOption={(inputValue, option) =>
+              option!.value.toLowerCase().includes(inputValue.toLowerCase())
+            }
           />
         </div>
         <div>
           <label>Rating:</label>
-          <input
+          <Input
             type="number"
             step="0.1"
             value={rating}
@@ -89,21 +103,15 @@ const AddMoviePage = () => {
         </div>
         <div>
           <label>Status:</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} required>
-            <option value="available">Available</option>
-            <option value="pending">Pending</option>
-            <option value="offline">Offline</option>
-          </select>
+          <Select value={status} onChange={(value) => setStatus(value)} style={{ width: 200 }}>
+            <Option value="available">Available</Option>
+            <Option value="pending">Pending</Option>
+            <Option value="offline">Offline</Option>
+          </Select>
         </div>
-        <div>
-          <label>Poster:</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setPoster(e.target.files ? e.target.files[0] : null)}
-          />
-        </div>
-        <button type="submit">Add Movie</button>
+        <Button type="primary" htmlType="submit">
+          Add Movie
+        </Button>
       </form>
     </div>
   );
