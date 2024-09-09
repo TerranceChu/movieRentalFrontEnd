@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { addMovie } from '../api/movieApi';
-import { Select, AutoComplete, Input, Button } from 'antd';  // 引入 Ant Design 的组件
+import { addMovie, uploadMoviePoster } from '../api/movieApi'; // 引入API文件
+import { Select, AutoComplete, Input, Button, Upload, message as antdMessage } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import NavBar from '../components/NavBar';
-
-const { Option, OptGroup } = Select;
+import type { UploadFile } from 'antd/es/upload/interface';
 
 const AddMoviePage = () => {
   const [title, setTitle] = useState('');
@@ -11,7 +11,9 @@ const AddMoviePage = () => {
   const [genre, setGenre] = useState('');
   const [rating, setRating] = useState('');
   const [status, setStatus] = useState('available');
+  const [description, setDescription] = useState(''); // 新增描述字段
   const [message, setMessage] = useState('');
+  const [posterFile, setPosterFile] = useState<UploadFile | null>(null);
 
   // Genre Options
   const genreOptions = [
@@ -32,7 +34,7 @@ const AddMoviePage = () => {
     { value: 'Historical' },
     { value: 'Musical' },
     { value: 'War' },
-    { value: 'Western' }
+    { value: 'Western' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,13 +47,40 @@ const AddMoviePage = () => {
         genre,
         rating: parseFloat(rating),
         status,
+        description, // 包括描述
       };
-      await addMovie(movieData);
+
+      // 添加电影数据
+      const response = await addMovie(movieData);
+      const movieId = response.data.insertedId;
+
+      // 上传 Poster
+      if (posterFile && movieId) {
+        const formData = new FormData();
+        formData.append('poster', posterFile as any);
+        await uploadMoviePoster(movieId, formData);
+        antdMessage.success('Movie and poster added successfully!');
+      }
+
       setMessage('Movie added successfully!');
+
+      // 清空表单
+      setTitle('');
+      setYear('');
+      setGenre('');
+      setRating('');
+      setStatus('available');
+      setDescription(''); // 清空描述
+      setPosterFile(null);
     } catch (error) {
       setMessage('Failed to add movie. Please try again.');
       console.error('Failed to add movie', error);
     }
+  };
+
+  // 处理文件选择
+  const handlePosterChange = (info: { file: UploadFile }) => {
+    setPosterFile(info.file);
   };
 
   return (
@@ -80,22 +109,24 @@ const AddMoviePage = () => {
         </div>
         <div>
           <label>Genre:</label>
-          {/* 下拉式清单与搜索 */}
           <AutoComplete
             options={genreOptions}
             style={{ width: 200 }}
             onSelect={(value) => setGenre(value)}
             placeholder="Select genre"
+            value={genre}
             filterOption={(inputValue, option) =>
               option!.value.toLowerCase().includes(inputValue.toLowerCase())
             }
           />
         </div>
         <div>
-          <label>Rating:</label>
+          <label>Rating (0.0 - 10.0):</label>
           <Input
             type="number"
             step="0.1"
+            min={0}
+            max={10}
             value={rating}
             onChange={(e) => setRating(e.target.value)}
             required
@@ -104,10 +135,28 @@ const AddMoviePage = () => {
         <div>
           <label>Status:</label>
           <Select value={status} onChange={(value) => setStatus(value)} style={{ width: 200 }}>
-            <Option value="available">Available</Option>
-            <Option value="pending">Pending</Option>
-            <Option value="offline">Offline</Option>
+            <Select.Option value="available">Available</Select.Option>
+            <Select.Option value="pending">Pending</Select.Option>
+            <Select.Option value="offline">Offline</Select.Option>
           </Select>
+        </div>
+        <div>
+          <label>Description:</label> {/* 新增描述输入框 */}
+          <Input.TextArea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Upload Poster:</label>
+          <Upload
+            beforeUpload={() => false} // 防止自动上传
+            onChange={handlePosterChange}
+            maxCount={1}
+          >
+            <Button icon={<UploadOutlined />}>Select Poster</Button>
+          </Upload>
         </div>
         <Button type="primary" htmlType="submit">
           Add Movie

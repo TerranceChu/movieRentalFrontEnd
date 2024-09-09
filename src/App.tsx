@@ -9,6 +9,8 @@ import MovieListPage from './pages/MovieListPage';
 import AddMoviePage from './pages/AddMoviePage';
 import UserProfilePage from './pages/UserProfilePage';
 import PrivateRoute from './components/PrivateRoute'; // 用于角色权限管理的路由
+import MovieDetailPage from './pages/MovieDetailPage'; // 导入电影详情页面
+
 
 const App: React.FC = () => {
   return (
@@ -19,18 +21,22 @@ const App: React.FC = () => {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* 普通用户页面 */}
-        <Route path="/application" element={<PrivateRoute allowedRoles={['user', 'employee']} />}>
-          <Route path="/application" element={<ApplicationPage />} />
-        </Route>
-        <Route path="/movies" element={<PrivateRoute allowedRoles={['user', 'employee']} />}>
-          <Route path="/movies" element={<MovieListPage />} />
-        </Route>
+        <Route path="/application" element={<ApplicationPage />} />
+        <Route path="/movies" element={<MovieListPage />} />
+        <Route path="/movies/:id" element={<MovieDetailPage />} />  {/* 电影详情页面，不受角色限制 */}
 
-        {/* 员工管理页面 */}
-        <Route path="/applications" element={<PrivateRoute allowedRoles={['employee']} />}>
+        {/* 员工管理页面，仅员工可访问 */}
+        <Route
+          path="/applications"
+          element={<PrivateRoute allowedRoles={['employee']} />}
+        >
           <Route path="/applications" element={<ApplicationListPage />} />
         </Route>
-        <Route path="/add-movie" element={<PrivateRoute allowedRoles={['employee']} />}>
+
+        <Route
+          path="/add-movie"
+          element={<PrivateRoute allowedRoles={['employee']} />}
+        >
           <Route path="/add-movie" element={<AddMoviePage />} />
         </Route>
 
@@ -47,3 +53,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
