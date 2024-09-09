@@ -20,36 +20,25 @@ const NavBar: React.FC = () => {
 
   return (
     <div style={styles.navbar}>
-      {role === 'user' && (
-        <>
-          <button style={styles.button} onClick={() => handleNavigation('/application')}>
-            Application
-          </button>
-          <button style={styles.button} onClick={() => handleNavigation('/movies')}>
-            Movie List
-          </button>
-          <button style={styles.button} onClick={() => handleNavigation('/profile')}>
-            Profile
-          </button>
-        </>
-      )}
+      {/* 普通用户和员工共用的菜单项 */}
+      <button style={styles.button} onClick={() => handleNavigation('/application')}>
+        Application
+      </button>
+      <button style={styles.button} onClick={() => handleNavigation('/movies')}>
+        Movie List
+      </button>
+      <button style={styles.button} onClick={() => handleNavigation('/profile')}>
+        Profile
+      </button>
 
       {role === 'employee' && (
         <>
-          <button style={styles.button} onClick={() => handleNavigation('/application')}>
-            Application
-          </button>
-          <button style={styles.button} onClick={() => handleNavigation('/movies')}>
-            Movie List
-          </button>
+          {/* 仅员工可见的额外选项 */}
           <button style={styles.button} onClick={() => handleNavigation('/applications')}>
             Application List
           </button>
           <button style={styles.button} onClick={() => handleNavigation('/add-movie')}>
             Add Movie
-          </button>
-          <button style={styles.button} onClick={() => handleNavigation('/profile')}>
-            Profile
           </button>
         </>
       )}

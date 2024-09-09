@@ -19,10 +19,10 @@ const App: React.FC = () => {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* 普通用户页面 */}
-        <Route path="/application" element={<PrivateRoute allowedRoles={['user']} />}>
+        <Route path="/application" element={<PrivateRoute allowedRoles={['user', 'employee']} />}>
           <Route path="/application" element={<ApplicationPage />} />
         </Route>
-        <Route path="/movies" element={<PrivateRoute allowedRoles={['user']} />}>
+        <Route path="/movies" element={<PrivateRoute allowedRoles={['user', 'employee']} />}>
           <Route path="/movies" element={<MovieListPage />} />
         </Route>
 

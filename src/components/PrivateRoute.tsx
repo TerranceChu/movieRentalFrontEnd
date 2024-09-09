@@ -1,19 +1,16 @@
 // src/components/PrivateRoute.tsx
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import jwtDecode from 'jwt-decode';
 
 const PrivateRoute: React.FC<{ allowedRoles: string[] }> = ({ allowedRoles }) => {
-  const token = localStorage.getItem('token');
-  
-  if (token) {
-    const decodedToken: { role: string } = jwtDecode(token); // 解码 JWT 令牌，获取角色信息
-    const userRole = decodedToken.role;
+  const role = localStorage.getItem('role');
 
-    return allowedRoles.includes(userRole) ? <Outlet /> : <Navigate to="/login" />;
+  // 检查用户是否已登录并且角色是否符合
+  if (!role) {
+    return <Navigate to="/login" />;  // 未登录时重定向到登录页面
   }
 
-  return <Navigate to="/login" />;
+  return allowedRoles.includes(role) ? <Outlet /> : <Navigate to="/login" />; // 如果角色符合，显示内容；否则重定向到登录页面
 };
 
 export default PrivateRoute;
