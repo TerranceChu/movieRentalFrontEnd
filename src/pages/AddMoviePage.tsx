@@ -1,13 +1,15 @@
 // src/pages/AddMoviePage.tsx
 import React, { useState } from 'react';
-import { addMovie } from '../api/movieApi';
+import { addMovie, uploadMoviePoster } from '../api/movieApi'; // 新增 uploadMoviePoster API 调用
 import NavBar from '../components/NavBar';
+
 const AddMoviePage = () => {
   const [title, setTitle] = useState('');
   const [year, setYear] = useState('');
   const [genre, setGenre] = useState('');
   const [rating, setRating] = useState('');
   const [status, setStatus] = useState('available');
+  const [poster, setPoster] = useState<File | null>(null); // 用于存储选择的图片
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +23,19 @@ const AddMoviePage = () => {
         rating: parseFloat(rating),
         status,
       };
-      await addMovie(movieData);
+
+      // 添加电影到数据库
+      const movieResponse = await addMovie(movieData);
+      const movieId = movieResponse.data.insertedId;
+
+      // 上传海报图片
+      if (poster && movieId) {
+        const formData = new FormData();
+        formData.append('poster', poster);
+
+        await uploadMoviePoster(movieId, formData); // 上传图片
+      }
+
       setMessage('Movie added successfully!');
     } catch (error) {
       setMessage('Failed to add movie. Please try again.');
@@ -29,11 +43,9 @@ const AddMoviePage = () => {
     }
   };
 
-
-
   return (
     <div>
-       {/* 导航栏 */}
+      {/* 导航栏 */}
       <NavBar />
       <h1>Add Movie</h1>
       {message && <p>{message}</p>}
@@ -83,9 +95,16 @@ const AddMoviePage = () => {
             <option value="offline">Offline</option>
           </select>
         </div>
+        <div>
+          <label>Poster:</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setPoster(e.target.files ? e.target.files[0] : null)}
+          />
+        </div>
         <button type="submit">Add Movie</button>
       </form>
-
     </div>
   );
 };
