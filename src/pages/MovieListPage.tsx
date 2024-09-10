@@ -1,11 +1,16 @@
 import React, { useEffect, useState, CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { getMovies } from '../api/movieApi';
+import { getMovies, deleteMovie } from '../api/movieApi';
 import NavBar from '../components/NavBar';
+import { useNavigate } from 'react-router-dom';
 
 const MovieListPage = () => {
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string>('');
+  const navigate = useNavigate();
+  
+  // 获取用户角色
+  const role = localStorage.getItem('role');
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -52,9 +57,15 @@ const MovieListPage = () => {
       fontSize: '14px',
       color: '#333',
     },
+    buttonGroup: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '10px',
+    },
     detailButton: {
       display: 'inline-block',
-      margin: '10px 0',
+      margin: '0',
       padding: '8px 15px',
       backgroundColor: '#FF6347',
       color: '#fff',
@@ -73,6 +84,21 @@ const MovieListPage = () => {
       fontSize: '13px',
       color: '#777',
     },
+  };
+
+  const handleDelete = async (id: string) => {
+    const isConfirmed = window.confirm('Are you sure you want to delete this movie?');
+  
+    if (isConfirmed) {
+      try {
+        await deleteMovie(id);
+        setMovies(movies.filter((movie) => movie._id !== id));
+        alert('Movie deleted successfully!');
+      } catch (error) {
+        console.error('Failed to delete movie', error);
+        alert('Failed to delete movie. Please try again.');
+      }
+    }
   };
 
   return (
@@ -95,9 +121,24 @@ const MovieListPage = () => {
                   <div style={styles.movieSubInfo}>
                     {movie.year} • {movie.genre} • {movie.rating}/10
                   </div>
-                  <Link to={`/movies/${movie._id}`}>
-                    <button style={styles.detailButton}>電影詳情 Movie Detail</button>
-                  </Link>
+                  <div style={styles.buttonGroup}>
+                    <Link to={`/movies/${movie._id}`}>
+                      <button style={styles.detailButton}>電影詳情 Movie Detail</button>
+                    </Link>
+
+                    {/* 仅员工可见 Edit 和 Delete 按钮 */}
+                    {role === 'employee' && (
+                      <>
+                        <button style={styles.detailButton} onClick={() => navigate(`/edit-movie/${movie._id}`)}>Edit</button>
+                        <button
+                          style={{ ...styles.detailButton, backgroundColor: 'red' }}
+                          onClick={() => handleDelete(movie._id)}
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

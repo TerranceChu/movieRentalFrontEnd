@@ -10,6 +10,7 @@ import AddMoviePage from './pages/AddMoviePage';
 import UserProfilePage from './pages/UserProfilePage';
 import PrivateRoute from './components/PrivateRoute'; // 用于角色权限管理的路由
 import MovieDetailPage from './pages/MovieDetailPage'; // 导入电影详情页面
+import EditMoviePage from './pages/EditMoviePage';
 
 
 const App: React.FC = () => {
@@ -45,6 +46,13 @@ const App: React.FC = () => {
           <Route path="/profile" element={<UserProfilePage />} />
         </Route>
 
+        <Route
+          path="/edit-movie/:id"
+          element={<PrivateRoute allowedRoles={['employee']} />}
+        >
+          <Route path="/edit-movie/:id" element={<EditMoviePage />} />
+        </Route>
+
         {/* 处理未匹配的路由，重定向到登录页面 */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
@@ -53,4 +61,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
