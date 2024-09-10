@@ -1,12 +1,15 @@
-// src/pages/ApplicationListPage.tsx
 import React, { useState, useEffect } from 'react';
 import { getApplications, updateApplicationStatus } from '../api/applicationApi';
 import NavBar from '../components/NavBar';
+import { Table, Select, Typography, Alert } from 'antd';
+
+const { Title } = Typography;
+const { Option } = Select;
 
 const ApplicationListPage: React.FC = () => {
   const [applications, setApplications] = useState<any[]>([]);
   const [error, setError] = useState<string>('');
-  
+
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -20,7 +23,6 @@ const ApplicationListPage: React.FC = () => {
 
     fetchApplications();
   }, []);
-
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
@@ -36,31 +38,60 @@ const ApplicationListPage: React.FC = () => {
     }
   };
 
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'applicantName',
+      key: 'applicantName',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'applicantEmail',
+      key: 'applicantEmail',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: 'Status',
+      key: 'status',
+      render: (text: string, record: any) => (
+        <Select
+          value={record.status}
+          onChange={(value) => handleStatusChange(record._id, value)}
+          style={{ width: 120 }}
+        >
+          <Option value="new">New</Option>
+          <Option value="pending">Pending</Option>
+          <Option value="accepted">Accepted</Option>
+          <Option value="rejected">Rejected</Option>
+        </Select>
+      ),
+    },
+  ];
+
   return (
     <div>
-      {/* 导航栏 */}
       <NavBar />
-      <h1>Application List</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <ul>
-        {applications.map((app) => (
-          <li key={app._id}>
-            <p>Name: {app.applicantName}</p>
-            <p>Email: {app.applicantEmail}</p>
-            <p>Description: {app.description}</p>
-            <p>Status: {app.status}</p>
-            <select
-              value={app.status}
-              onChange={(e) => handleStatusChange(app._id, e.target.value)}
-            >
-              <option value="new">New</option>
-              <option value="pending">Pending</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </li>
-        ))}
-      </ul>
+      <div style={{ padding: '20px' }}>
+        <Title level={2}>Application List</Title>
+        {error && (
+          <Alert
+            message={error}
+            type="error"
+            showIcon
+            style={{ marginBottom: '20px' }}
+          />
+        )}
+        <Table
+          dataSource={applications}
+          columns={columns}
+          rowKey="_id"
+          pagination={{ pageSize: 5 }}
+        />
+      </div>
     </div>
   );
 };
