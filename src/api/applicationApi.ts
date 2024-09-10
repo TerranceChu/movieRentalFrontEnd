@@ -7,6 +7,11 @@ export const getApplications = async () => {
   return axiosInstance.get(API_URL);
 };
 
+//添加获取特定用户申请的 API 调用
+export const getUserApplications = async () => {
+  return axiosInstance.get(`${API_URL}/user`);
+};
+
 // 获取单个申请
 export const getApplicationById = async (id: string) => {
   return axiosInstance.get(`${API_URL}/${id}`);
