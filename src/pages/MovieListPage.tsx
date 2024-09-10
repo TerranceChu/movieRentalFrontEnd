@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom';
 import { getMovies, deleteMovie } from '../api/movieApi';
 import NavBar from '../components/NavBar';
 import { useNavigate } from 'react-router-dom';
+import { Select, Input } from 'antd'; // 导入Ant Design的Select和Input组件
 
 const MovieListPage = () => {
   const [movies, setMovies] = useState<any[]>([]);
+  const [filteredMovies, setFilteredMovies] = useState<any[]>([]);
   const [error, setError] = useState<string>('');
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]); // 保存选中的电影分类
+  const [searchTitle, setSearchTitle] = useState<string>(''); // 保存搜索的电影名称
   const navigate = useNavigate();
   
-  // 获取用户角色
   const role = localStorage.getItem('role');
 
   useEffect(() => {
@@ -17,6 +20,7 @@ const MovieListPage = () => {
       try {
         const response = await getMovies();
         setMovies(response.data);
+        setFilteredMovies(response.data); // 初始时显示所有电影
       } catch (error) {
         setError('Failed to fetch movies');
         console.error('Failed to fetch movies', error);
@@ -25,6 +29,43 @@ const MovieListPage = () => {
 
     fetchMovies();
   }, []);
+
+  // 电影分类选项
+  const genreOptions = [
+    'Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy', 'Horror', 
+    'Sci-Fi', 'Thriller', 'Documentary', 'Romance', 'Animation', 
+    'Biography', 'Crime', 'Family', 'Historical', 'Musical', 'War', 'Western'
+  ];
+
+  // 根据用户选择的分类和电影名称过滤电影列表
+  const handleFilters = (genres: string[], title: string) => {
+    let filtered = movies;
+
+    // 按分类过滤
+    if (genres.length > 0) {
+      filtered = filtered.filter((movie) => genres.includes(movie.genre));
+    }
+
+    // 按名称过滤
+    if (title) {
+      filtered = filtered.filter((movie) => movie.title.toLowerCase().includes(title.toLowerCase()));
+    }
+
+    setFilteredMovies(filtered);
+  };
+
+  // 处理分类选择变化
+  const handleGenreChange = (genres: string[]) => {
+    setSelectedGenres(genres);
+    handleFilters(genres, searchTitle);
+  };
+
+  // 处理搜索框输入变化
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    setSearchTitle(title);
+    handleFilters(selectedGenres, title);
+  };
 
   // 样式定义
   const styles: { [key: string]: CSSProperties } = {
@@ -84,6 +125,15 @@ const MovieListPage = () => {
       fontSize: '13px',
       color: '#777',
     },
+    filters: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: '20px',
+    },
+    searchInput: {
+      width: '100%',
+      marginBottom: '20px',
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -92,7 +142,10 @@ const MovieListPage = () => {
     if (isConfirmed) {
       try {
         await deleteMovie(id);
-        setMovies(movies.filter((movie) => movie._id !== id));
+        // 删除成功后从原始电影列表和过滤后的电影列表中移除已删除的电影
+        const updatedMovies = movies.filter((movie) => movie._id !== id);
+        setMovies(updatedMovies);
+        setFilteredMovies(updatedMovies);
         alert('Movie deleted successfully!');
       } catch (error) {
         console.error('Failed to delete movie', error);
@@ -106,10 +159,31 @@ const MovieListPage = () => {
       <NavBar />
       <div style={styles.container}>
         <h1>Movie List</h1>
+
+        <div style={styles.filters}>
+          {/* 电影分类过滤器 */}
+          <Select
+            mode="multiple"
+            allowClear
+            style={{ width: '45%' }}
+            placeholder="Select movie genres"
+            onChange={handleGenreChange}
+            options={genreOptions.map((genre) => ({ value: genre, label: genre }))}
+          />
+
+          {/* 电影名称搜索框 */}
+          <Input
+            placeholder="Search by movie title"
+            value={searchTitle}
+            onChange={handleSearchChange}
+            style={{ width: '45%' }}
+          />
+        </div>
+
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        {movies.length > 0 ? (
+        {filteredMovies.length > 0 ? (
           <div style={styles.movieGrid}>
-            {movies.map((movie) => (
+            {filteredMovies.map((movie) => (
               <div key={movie._id} style={styles.movieCard}>
                 <img
                   src={movie.posterPath ? `http://localhost:3000/${movie.posterPath}` : '/default-poster.png'}
