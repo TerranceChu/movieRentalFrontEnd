@@ -71,13 +71,23 @@ const AdminChatPage = () => {
     setMessage('');
   };
 
-  const handleLeaveChat = () => {
-    if (selectedChat) {
-      socket.emit('leaveChat', selectedChat._id); // 向服务器发送离开房间的事件
-      setSelectedChat(null);
-      localStorage.removeItem('selectedChat');
-    }
-  };
+// 用户手动离开聊天室
+const handleLeaveChat = () => {
+  if (selectedChat) {
+    // 发送关闭聊天室的消息给用户
+    socket.emit('sendMessage', { chatId: selectedChat._id, message: 'Chatroom closed please leave', sender: 'system' });
+
+    // 向服务器发送离开房间的事件
+    socket.emit('leaveChat', selectedChat._id);
+
+    // 清空 selectedChat 并移除 localStorage 中的记录
+    setSelectedChat(null);
+    localStorage.removeItem('selectedChat');
+
+    // 刷新页面，防止显示上一聊天室申请
+    window.location.reload();
+  }
+};
 
   return (
     <div>

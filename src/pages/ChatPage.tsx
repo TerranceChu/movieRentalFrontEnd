@@ -61,6 +61,9 @@ const ChatPage = () => {
   // 用户手动离开聊天室
   const handleLeaveChat = () => {
     if (chatId) {
+      // 发送关闭聊天室的消息给另一方
+      socket.emit('sendMessage', { chatId, message: 'Chatroom closed please leave', sender: 'system' });
+
       socket.emit('leaveChat', chatId); // 向服务器发送离开房间的事件
       setChatId(null);
       setMessages([]);
@@ -87,7 +90,7 @@ const ChatPage = () => {
             renderItem={(item) => (
               <List.Item>
                 <List.Item.Meta
-                  title={item.sender === 'user' ? 'You' : 'Admin'}
+                  title={item.sender === 'user' ? 'You' : item.sender === 'admin' ? 'Admin' : 'System'}
                   description={`${item.message} - ${new Date(item.timestamp).toLocaleString()}`}
                 />
               </List.Item>
