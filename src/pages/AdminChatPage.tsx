@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getPendingChats, acceptChat, getChatById } from '../api/chatApi';
 import { List, Button, Input, Typography } from 'antd';
 import NavBar from '../components/NavBar';
-import io from 'socket.io-client'; // 引入 socket.io-client
+import socket from '../utils/socket';
 
 const { Title } = Typography;
-const socket = io('http://localhost:3000'); // 与 WebSocket 服务器连接
 
 interface Message {
   sender: string;
@@ -15,7 +14,7 @@ interface Message {
 
 const AdminChatPage = () => {
   const [pendingChats, setPendingChats] = useState<any[]>([]);
-  const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [selectedChat, setSelectedChat] = useState<any>(JSON.parse(localStorage.getItem('selectedChat') || 'null'));
   const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
@@ -36,6 +35,7 @@ const AdminChatPage = () => {
       await acceptChat(chatId);
       const response = await getChatById(chatId);
       setSelectedChat(response.data);
+      localStorage.setItem('selectedChat', JSON.stringify(response.data)); // 保存到 localStorage
 
       // 加入聊天房间
       socket.emit('joinChat', chatId);
@@ -48,10 +48,14 @@ const AdminChatPage = () => {
   useEffect(() => {
     if (selectedChat) {
       socket.on('newMessage', (newMessage) => {
-        setSelectedChat((prevChat: any) => ({
-          ...prevChat,
-          messages: [...prevChat.messages, newMessage],
-        }));
+        setSelectedChat((prevChat: any) => {
+          const updatedChat = {
+            ...prevChat,
+            messages: [...prevChat.messages, newMessage],
+          };
+          localStorage.setItem('selectedChat', JSON.stringify(updatedChat)); // 保存到 localStorage
+          return updatedChat;
+        });
       });
 
       return () => {
@@ -63,13 +67,16 @@ const AdminChatPage = () => {
   const handleSendMessage = () => {
     if (!message || !selectedChat) return;
 
-    // 发送消息通过 WebSocket
     socket.emit('sendMessage', { chatId: selectedChat._id, message, sender: 'admin' });
-    setSelectedChat({
-      ...selectedChat,
-      messages: [...selectedChat.messages, { sender: 'admin', message, timestamp: new Date() }],
-    });
-    setMessage(''); // 清空输入框
+    setMessage('');
+  };
+
+  const handleLeaveChat = () => {
+    if (selectedChat) {
+      socket.emit('leaveChat', selectedChat._id); // 向服务器发送离开房间的事件
+      setSelectedChat(null);
+      localStorage.removeItem('selectedChat');
+    }
   };
 
   return (
@@ -106,6 +113,9 @@ const AdminChatPage = () => {
           />
           <Button type="primary" onClick={handleSendMessage}>
             Send Message
+          </Button>
+          <Button type="default" onClick={handleLeaveChat} style={{ marginTop: '10px' }}>
+            Leave Chatroom
           </Button>
         </div>
       )}

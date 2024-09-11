@@ -2,25 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { startChat } from '../api/chatApi';
 import { Input, Button, List, Typography } from 'antd';
 import NavBar from '../components/NavBar';
-import io from 'socket.io-client'; // 引入 socket.io-client
+import socket from '../utils/socket';
 
 const { Title } = Typography;
-const socket = io('http://localhost:3000'); // 与 WebSocket 服务器连接
 
 const ChatPage = () => {
-  const [chatId, setChatId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [chatId, setChatId] = useState<string | null>(localStorage.getItem('chatId'));
+  const [messages, setMessages] = useState<any[]>(JSON.parse(localStorage.getItem('messages') || '[]'));
   const [message, setMessage] = useState<string>('');
 
   // 发起聊天请求
   const handleStartChat = async () => {
     try {
       const response = await startChat('Hello, I need help');
-      setChatId(response.data.chatId);
-      setMessages([{ sender: 'user', message: 'Hello, I need help', timestamp: new Date() }]);
+      const newChatId = response.data.chatId;
+      setChatId(newChatId);
+      const initialMessages = [{ sender: 'user', message: 'Hello, I need help', timestamp: new Date() }];
+      setMessages(initialMessages);
       
+      // 保存到 localStorage
+      localStorage.setItem('chatId', newChatId);
+      localStorage.setItem('messages', JSON.stringify(initialMessages));
+
       // 加入聊天房间
-      socket.emit('joinChat', response.data.chatId);
+      socket.emit('joinChat', newChatId);
     } catch (error) {
       console.error('Failed to start chat', error);
     }
@@ -32,7 +37,11 @@ const ChatPage = () => {
       socket.emit('joinChat', chatId); // 加入指定聊天房间
 
       socket.on('newMessage', (newMessage) => {
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        setMessages((prevMessages) => {
+          const updatedMessages = [...prevMessages, newMessage];
+          localStorage.setItem('messages', JSON.stringify(updatedMessages)); // 保存到 localStorage
+          return updatedMessages;
+        });
       });
 
       return () => {
@@ -45,10 +54,19 @@ const ChatPage = () => {
   const handleSendMessage = () => {
     if (!message || !chatId) return;
 
-    // 发送消息通过 WebSocket
     socket.emit('sendMessage', { chatId, message, sender: 'user' });
-    //setMessages([...messages, { sender: 'user', message, timestamp: new Date() }]);
     setMessage(''); // 清空输入框
+  };
+
+  // 用户手动离开聊天室
+  const handleLeaveChat = () => {
+    if (chatId) {
+      socket.emit('leaveChat', chatId); // 向服务器发送离开房间的事件
+      setChatId(null);
+      setMessages([]);
+      localStorage.removeItem('chatId');
+      localStorage.removeItem('messages');
+    }
   };
 
   return (
@@ -82,6 +100,9 @@ const ChatPage = () => {
           />
           <Button type="primary" onClick={handleSendMessage}>
             Send Message
+          </Button>
+          <Button type="default" onClick={handleLeaveChat} style={{ marginTop: '10px' }}>
+            Leave Chatroom
           </Button>
         </div>
       )}
