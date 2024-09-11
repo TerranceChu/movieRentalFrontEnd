@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { startChat, sendMessage, getChatById } from '../api/chatApi';
+import { startChat } from '../api/chatApi';
 import { Input, Button, List, Typography } from 'antd';
 import NavBar from '../components/NavBar';
+import io from 'socket.io-client'; // 引入 socket.io-client
 
 const { Title } = Typography;
+const socket = io('http://localhost:3000'); // 与 WebSocket 服务器连接
 
 const ChatPage = () => {
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
 
   // 发起聊天请求
   const handleStartChat = async () => {
@@ -17,41 +18,38 @@ const ChatPage = () => {
       const response = await startChat('Hello, I need help');
       setChatId(response.data.chatId);
       setMessages([{ sender: 'user', message: 'Hello, I need help', timestamp: new Date() }]);
+      
+      // 加入聊天房间
+      socket.emit('joinChat', response.data.chatId);
     } catch (error) {
       console.error('Failed to start chat', error);
     }
   };
 
-  // 发送消息
-  const handleSendMessage = async () => {
-    if (!message || !chatId) return;
-
-    try {
-      await sendMessage(chatId, message);
-      setMessages([...messages, { sender: 'user', message, timestamp: new Date() }]);
-      setMessage(''); // 清空输入框
-    } catch (error) {
-      console.error('Failed to send message', error);
-    }
-  };
-
-  // 获取聊天详细信息
-  const fetchChatDetails = async () => {
-    if (!chatId) return;
-
-    try {
-      const response = await getChatById(chatId);
-      setMessages(response.data.messages);
-    } catch (error) {
-      console.error('Failed to fetch chat details', error);
-    }
-  };
-
+  // 监听新消息
   useEffect(() => {
     if (chatId) {
-      fetchChatDetails();
+      socket.emit('joinChat', chatId); // 加入指定聊天房间
+
+      socket.on('newMessage', (newMessage) => {
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      });
+
+      return () => {
+        socket.off('newMessage'); // 清理 WebSocket 监听器
+      };
     }
   }, [chatId]);
+
+  // 发送消息
+  const handleSendMessage = () => {
+    if (!message || !chatId) return;
+
+    // 发送消息通过 WebSocket
+    socket.emit('sendMessage', { chatId, message, sender: 'user' });
+    //setMessages([...messages, { sender: 'user', message, timestamp: new Date() }]);
+    setMessage(''); // 清空输入框
+  };
 
   return (
     <div>
@@ -59,7 +57,7 @@ const ChatPage = () => {
       <Title level={2}>Chat with Support</Title>
 
       {!chatId && (
-        <Button type="primary" onClick={handleStartChat} disabled={loading}>
+        <Button type="primary" onClick={handleStartChat}>
           Start Chat
         </Button>
       )}

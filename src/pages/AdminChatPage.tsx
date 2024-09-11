@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { getPendingChats, acceptChat, getChatById, sendMessage } from '../api/chatApi';
+import { getPendingChats, acceptChat, getChatById } from '../api/chatApi';
 import { List, Button, Input, Typography } from 'antd';
 import NavBar from '../components/NavBar';
+import io from 'socket.io-client'; // 引入 socket.io-client
 
 const { Title } = Typography;
+const socket = io('http://localhost:3000'); // 与 WebSocket 服务器连接
+
 interface Message {
   sender: string;
   message: string;
   timestamp: string;
-}interface Message {
-    sender: string;
-    message: string;
-    timestamp: string;
-  }
+}
+
 const AdminChatPage = () => {
   const [pendingChats, setPendingChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
@@ -36,24 +36,40 @@ const AdminChatPage = () => {
       await acceptChat(chatId);
       const response = await getChatById(chatId);
       setSelectedChat(response.data);
+
+      // 加入聊天房间
+      socket.emit('joinChat', chatId);
     } catch (error) {
       console.error('Failed to accept chat', error);
     }
   };
 
-  const handleSendMessage = async () => {
+  // 监听新消息
+  useEffect(() => {
+    if (selectedChat) {
+      socket.on('newMessage', (newMessage) => {
+        setSelectedChat((prevChat: any) => ({
+          ...prevChat,
+          messages: [...prevChat.messages, newMessage],
+        }));
+      });
+
+      return () => {
+        socket.off('newMessage'); // 清理 WebSocket 监听器
+      };
+    }
+  }, [selectedChat]);
+
+  const handleSendMessage = () => {
     if (!message || !selectedChat) return;
 
-    try {
-      await sendMessage(selectedChat._id, message);
-      setSelectedChat({
-        ...selectedChat,
-        messages: [...selectedChat.messages, { sender: 'admin', message, timestamp: new Date() }],
-      });
-      setMessage('');
-    } catch (error) {
-      console.error('Failed to send message', error);
-    }
+    // 发送消息通过 WebSocket
+    socket.emit('sendMessage', { chatId: selectedChat._id, message, sender: 'admin' });
+    setSelectedChat({
+      ...selectedChat,
+      messages: [...selectedChat.messages, { sender: 'admin', message, timestamp: new Date() }],
+    });
+    setMessage(''); // 清空输入框
   };
 
   return (
@@ -73,16 +89,16 @@ const AdminChatPage = () => {
       ) : (
         <div>
           <List
-  dataSource={selectedChat.messages}
-  renderItem={(item: Message) => (  // 为 item 明确类型
-    <List.Item>
-      <List.Item.Meta
-        title={item.sender === 'admin' ? 'You' : 'User'}
-        description={`${item.message} - ${new Date(item.timestamp).toLocaleString()}`}
-      />
-    </List.Item>
-  )}
-/>
+            dataSource={selectedChat.messages}
+            renderItem={(item: Message) => (
+              <List.Item>
+                <List.Item.Meta
+                  title={item.sender === 'admin' ? 'You' : 'User'}
+                  description={`${item.message} - ${new Date(item.timestamp).toLocaleString()}`}
+                />
+              </List.Item>
+            )}
+          />
           <Input
             placeholder="Type your message..."
             value={message}
