@@ -11,7 +11,8 @@ import UserProfilePage from './pages/UserProfilePage';
 import PrivateRoute from './components/PrivateRoute'; // 用于角色权限管理的路由
 import MovieDetailPage from './pages/MovieDetailPage'; // 导入电影详情页面
 import EditMoviePage from './pages/EditMoviePage';
-
+import ChatPage from './pages/ChatPage';
+import AdminChatPage from './pages/AdminChatPage';
 
 const App: React.FC = () => {
   return (
@@ -40,6 +41,16 @@ const App: React.FC = () => {
         >
           <Route path="/add-movie" element={<AddMoviePage />} />
         </Route>
+
+          {/* 用户聊天页面 */}
+  <Route path="/chat" element={<PrivateRoute allowedRoles={['user', 'employee']} />}>
+    <Route path="/chat" element={<ChatPage />} />
+  </Route>
+
+  {/* 管理员聊天页面 */}
+  <Route path="/admin-chat" element={<PrivateRoute allowedRoles={['employee']} />}>
+    <Route path="/admin-chat" element={<AdminChatPage />} />
+  </Route>
 
         {/* 用户个人资料页面，任何登录用户都可以访问 */}
         <Route path="/profile" element={<PrivateRoute allowedRoles={['user', 'employee']} />}>

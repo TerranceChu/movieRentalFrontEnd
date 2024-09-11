@@ -13,12 +13,32 @@ export const getMovieById = async (id: string) => {
 };
 
 // 添加新电影
-export const addMovie = async (movieData: any) => {
+export const addMovie = async (movieData: any, posterFile?: File) => {
+  // 如果有电影海报上传，先上传电影海报，再添加电影
+  if (posterFile) {
+    const formData = new FormData();
+    formData.append('poster', posterFile);
+
+    // 上传电影海报
+    const posterResponse = await uploadMoviePoster(movieData._id, formData);
+    movieData.posterPath = posterResponse.data.path; // 设定海报路径
+  }
+
   return axiosInstance.post(API_URL, movieData);
 };
 
 // 更新电影信息
-export const updateMovie = async (id: string, movieData: any) => {
+export const updateMovie = async (id: string, movieData: any, posterFile?: File) => {
+  // 如果有新的电影海报上传，先上传海报再更新电影信息
+  if (posterFile) {
+    const formData = new FormData();
+    formData.append('poster', posterFile);
+
+    // 上传新海报
+    const posterResponse = await uploadMoviePoster(id, formData);
+    movieData.posterPath = posterResponse.data.path; // 更新海报路径
+  }
+
   return axiosInstance.put(`${API_URL}/${id}`, movieData);
 };
 

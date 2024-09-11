@@ -30,6 +30,10 @@ const NavBar: React.FC = () => {
       <button style={styles.button} onClick={() => handleNavigation('/profile')}>
         Profile
       </button>
+            {/* 新增聊天页面的导航按钮 */}
+            <button style={styles.button} onClick={() => handleNavigation('/chat')}>
+        Chat
+      </button>
 
       {role === 'employee' && (
         <>
@@ -40,6 +44,9 @@ const NavBar: React.FC = () => {
           <button style={styles.button} onClick={() => handleNavigation('/add-movie')}>
             Add Movie
           </button>
+          <button style={styles.button} onClick={() => handleNavigation('/admin-chat')}>
+          Admin Chat
+        </button>
         </>
       )}
 
