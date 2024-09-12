@@ -199,6 +199,7 @@ const MovieListPage = () => {
                     <Link to={`/movies/${movie._id}`}>
                       <button style={styles.detailButton}>電影詳情 Movie Detail</button>
                     </Link>
+                    <p><strong>Status:</strong> {movie.status}</p>
 
                     {/* 仅员工可见 Edit 和 Delete 按钮 */}
                     {role === 'employee' && (
