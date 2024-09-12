@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { getApplications, updateApplicationStatus } from '../api/applicationApi';
 import NavBar from '../components/NavBar';
-import { Table, Select, Typography, Alert } from 'antd';
+import { Table, Select, Typography, Alert, Input } from 'antd';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { Search } = Input;
 
 const ApplicationListPage: React.FC = () => {
   const [applications, setApplications] = useState<any[]>([]);
+  const [filteredApplications, setFilteredApplications] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -15,6 +19,7 @@ const ApplicationListPage: React.FC = () => {
       try {
         const response = await getApplications();
         setApplications(response.data);
+        setFilteredApplications(response.data);
       } catch (error) {
         setError('Failed to fetch applications');
         console.error('Failed to fetch applications:', error);
@@ -36,6 +41,34 @@ const ApplicationListPage: React.FC = () => {
       setError('Failed to update application status');
       console.error('Failed to update application status:', error);
     }
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    filterApplications(value, selectedStatus);
+  };
+
+  const handleFilterByStatus = (value: string | null) => {
+    setSelectedStatus(value);
+    filterApplications(searchTerm, value);
+  };
+
+  const filterApplications = (searchTerm: string, status: string | null) => {
+    let filtered = applications;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (app) =>
+          app.applicantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          app.applicantEmail.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (status) {
+      filtered = filtered.filter((app) => app.status === status);
+    }
+
+    setFilteredApplications(filtered);
   };
 
   const columns = [
@@ -85,8 +118,32 @@ const ApplicationListPage: React.FC = () => {
             style={{ marginBottom: '20px' }}
           />
         )}
+
+        {/* Search Input */}
+        <Search
+          placeholder="Search by name or email"
+          enterButton="Search"
+          value={searchTerm}
+          onChange={(e) => handleSearch(e.target.value)}
+          onSearch={handleSearch}
+          style={{ marginBottom: '20px', width: '300px' }}
+        />
+
+        {/* Status Filter */}
+        <Select
+          placeholder="Filter by status"
+          style={{ width: 200, marginBottom: '20px', marginLeft: '20px' }}
+          onChange={handleFilterByStatus}
+          allowClear
+        >
+          <Option value="new">New</Option>
+          <Option value="pending">Pending</Option>
+          <Option value="accepted">Accepted</Option>
+          <Option value="rejected">Rejected</Option>
+        </Select>
+
         <Table
-          dataSource={applications}
+          dataSource={filteredApplications}
           columns={columns}
           rowKey="_id"
           pagination={{ pageSize: 5 }}
