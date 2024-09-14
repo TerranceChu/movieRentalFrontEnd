@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance'; // 引入 axiosInstance
+import axiosInstance from './axiosInstance';
 
 const API_URL = '/movies';
 

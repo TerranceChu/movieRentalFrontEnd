@@ -3,7 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 你可以在这里添加全局的自定义样式 */
 
 /* 通用的全局样式设置 */
 html, body, #root {
@@ -34,4 +33,3 @@ a:hover {
   text-decoration: underline;
 }
 
-/* 你可以在这里添加其他全局样式 */
